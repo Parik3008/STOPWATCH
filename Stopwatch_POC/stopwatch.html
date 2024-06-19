@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stopwatch with Laps</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .stopwatch {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 400px;
+            width: 100%;
+        }
+
+        .header {
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            font-size: 2em;
+            color: #333;
+            margin: 0;
+        }
+
+        #display {
+            font-size: 3em;
+            margin-bottom: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #333;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        button {
+            font-size: 1.5em;
+            padding: 10px 30px;
+            margin: 5px;
+            cursor: pointer;
+            border:none;
+            outline: none;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #ccc;
+            transform: scale(1.05);
+        }
+
+        .start {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .stop {
+            background-color: #f44336;
+            color: white;
+        }
+
+        .reset {
+            background-color: #2196F3;
+            color: white;
+        }
+
+        .lap {
+            background-color: #757575;
+            color: white;
+        }
+
+        #laps {
+            list-style-type: none;
+            padding: 0;
+            text-align: left;
+            max-height: 150px;
+            overflow-y: auto;
+            padding-right: 10px;
+            margin: 0;
+        }
+
+        #laps li {
+            font-size: 1.2em;
+            margin: 5px 0;
+            padding: 8px;
+            background-color: #f0f0f0;
+            border-radius: 5px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s ease;
+        }
+
+        #laps li:hover {
+            background-color: #e0e0e0;
+        }
+    </style>
+</head>
+<body>
+    <div class="stopwatch">
+        <div class="header">
+            <h1>STOPWATCH</h1>
+        </div>
+        <div id="display">00:00:00.00</div> <!-- Display above the controls -->
+        <div class="controls">
+            <button id="startStop" class="start">Start</button>
+            <button id="reset" class="reset">Reset</button>
+            <button id="lap" class="lap">Lap</button>
+        </div>
+        <ul id="laps"></ul>
+    </div>
+
+    <script>
+        let startTime = 0;
+        let updatedTime = 0;
+        let difference = 0;
+        let interval;
+        let running = false;
+        let lapCount = 0;
+
+        const display = document.getElementById('display');
+        const startStopButton = document.getElementById('startStop');
+        const resetButton = document.getElementById('reset');
+        const lapButton = document.getElementById('lap');
+        const laps = document.getElementById('laps');
+
+        startStopButton.addEventListener('click', startStop);
+        resetButton.addEventListener('click', reset);
+        lapButton.addEventListener('click', recordLap);
+
+        function startStop() {
+            if (running) {
+                clearInterval(interval);
+                running = false;
+                startStopButton.textContent = 'Start';
+                startStopButton.classList.remove('stop');
+                startStopButton.classList.add('start');
+            } else {
+                startTime = Date.now() - difference;
+                interval = setInterval(updateDisplay, 10);
+                running = true;
+                startStopButton.textContent = 'Stop';
+                startStopButton.classList.remove('start');
+                startStopButton.classList.add('stop');
+            }
+        }
+
+        function reset() {
+            clearInterval(interval);
+            running = false;
+            startStopButton.textContent = 'Start';
+            startStopButton.classList.remove('stop');
+            startStopButton.classList.add('start');
+            difference = 0;
+            display.textContent = '00:00:00.00';
+            laps.innerHTML = '';
+            lapCount = 0;
+        }
+
+        function recordLap() {
+            if (running) {
+                lapCount++;
+                const lapTime = document.createElement('li');
+                lapTime.textContent = `Lap ${lapCount}: ${display.textContent}`;
+                laps.appendChild(lapTime);
+                // Scroll to bottom of laps list
+                laps.scrollTop = laps.scrollHeight;
+            }
+        }
+
+        function updateDisplay() {
+            updatedTime = Date.now();
+            difference = updatedTime - startTime;
+
+            const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((difference % (1000 * 60)) / 1000);
+            const milliseconds = Math.floor((difference % 1000) / 10);
+
+            display.textContent = `${pad(hours)}:${pad(minutes)}:${pad(seconds)}.${pad(milliseconds, 2)}`;
+        }
+
+        function pad(number, digits = 2) {
+            return number.toString().padStart(digits, '0');
+        }
+    </script>
+</body>
+</html>
